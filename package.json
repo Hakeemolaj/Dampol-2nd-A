@@ -1,0 +1,110 @@
+{
+  "name": "barangay-web-application",
+  "version": "1.0.0",
+  "description": "A comprehensive web application for barangay hall operations, resident services, and community engagement in the Philippines",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "start:frontend": "cd frontend && npm start",
+    "start:backend": "cd backend && npm start",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && npm test",
+    "test:unit": "npm run test:frontend && npm run test:backend",
+    "test:integration": "cd tests/integration && npm test",
+    "test:e2e": "cd tests/e2e && npx playwright test",
+    "test:accessibility": "cd tests/accessibility && npm test",
+    "lint": "npm run lint:frontend && npm run lint:backend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:fix": "npm run lint:frontend -- --fix && npm run lint:backend -- --fix",
+    "type-check": "npm run type-check:frontend && npm run type-check:backend",
+    "type-check:frontend": "cd frontend && npm run type-check",
+    "type-check:backend": "cd backend && npm run type-check",
+    "db:migrate": "cd database && npm run migrate",
+    "db:seed": "cd database && npm run seed",
+    "db:reset": "cd database && npm run reset",
+    "db:backup": "cd scripts && node backup-database.js",
+    "deploy:staging": "cd deployment && ./deploy-staging.sh",
+    "deploy:production": "cd deployment && ./deploy-production.sh",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "setup": "npm install && npm run setup:frontend && npm run setup:backend",
+    "setup:frontend": "cd frontend && npm install",
+    "setup:backend": "cd backend && npm install",
+    "clean": "npm run clean:frontend && npm run clean:backend",
+    "clean:frontend": "cd frontend && rm -rf .next node_modules",
+    "clean:backend": "cd backend && rm -rf dist node_modules",
+    "security:audit": "npm audit --workspaces",
+    "security:fix": "npm audit fix --workspaces",
+    "docs:generate": "cd docs && npm run generate",
+    "docs:serve": "cd docs && npm run serve"
+  },
+  "keywords": [
+    "barangay",
+    "government",
+    "philippines",
+    "local-government",
+    "civic-services",
+    "nextjs",
+    "nodejs",
+    "postgresql",
+    "supabase"
+  ],
+  "author": {
+    "name": "Barangay Development Team",
+    "email": "dev@barangay.gov.ph"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/barangay-web-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/barangay-web-app/issues"
+  },
+  "homepage": "https://github.com/your-org/barangay-web-app#readme",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.55.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "npm run type-check && npm run test"
+    }
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-tabs": "^1.1.12"
+  }
+}

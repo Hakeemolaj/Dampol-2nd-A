@@ -1,0 +1,199 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 249 250 251; /* gray-50 */
+    --foreground: 17 24 39; /* gray-900 */
+  }
+
+  * {
+    border-color: rgb(229 231 235);
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500 ring-offset-2 transition-all duration-200;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Improved text rendering */
+  body {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Skip link for accessibility */
+  .skip-link {
+    @apply absolute -top-10 left-6 z-50 bg-primary-600 text-white px-4 py-2 rounded-md;
+    @apply focus:top-6 transition-all duration-200;
+  }
+}
+
+@layer components {
+  /* Government-specific styles */
+  .government-header {
+    @apply bg-primary-700 text-white shadow-government backdrop-blur-sm;
+  }
+
+  .government-card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200;
+  }
+
+  .government-button {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200;
+  }
+
+  /* Navigation specific styles */
+  .nav-link {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .nav-link:hover {
+    @apply transform scale-105;
+  }
+
+  /* Admin sidebar styles */
+  .admin-nav-item {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .admin-nav-item:hover {
+    @apply transform translate-x-1;
+  }
+
+  /* Admin layout fixes */
+  .admin-layout {
+    @apply min-h-screen flex;
+  }
+
+  .admin-sidebar {
+    @apply w-72 flex-shrink-0;
+  }
+
+  .admin-main {
+    @apply flex-1 flex flex-col min-w-0;
+  }
+
+  /* Z-index layering for admin interface */
+  .admin-backdrop {
+    z-index: 20; /* Mobile sidebar backdrop */
+  }
+
+  .admin-sidebar-mobile {
+    z-index: 30; /* Mobile sidebar overlay */
+  }
+
+  .admin-header {
+    z-index: 40; /* Sticky header - highest priority */
+  }
+
+  /* Form styles */
+  .form-input {
+    @apply block w-full rounded-md border-gray-300 shadow-sm;
+    @apply focus:border-primary-500 focus:ring-primary-500;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  .form-error {
+    @apply text-sm text-error-600 mt-1;
+  }
+
+  /* Status indicators */
+  .status-pending {
+    @apply bg-warning-100 text-warning-800 border-warning-200;
+  }
+
+  .status-approved {
+    @apply bg-success-100 text-success-800 border-success-200;
+  }
+
+  .status-rejected {
+    @apply bg-error-100 text-error-800 border-error-200;
+  }
+
+  /* Accessibility helpers */
+  .sr-only {
+    @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  .not-sr-only {
+    @apply static w-auto h-auto p-0 m-0 overflow-visible whitespace-normal;
+    clip: auto;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  /* Responsive utilities */
+  .safe-area-inset {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* Navigation utilities */
+  .nav-blur {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Mobile-first responsive text */
+  .responsive-text {
+    @apply text-sm sm:text-base lg:text-lg;
+  }
+
+  /* Improved button hover states */
+  .btn-hover {
+    @apply transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95;
+  }
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
