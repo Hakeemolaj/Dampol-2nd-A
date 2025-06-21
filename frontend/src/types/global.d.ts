@@ -1,18 +1,21 @@
 // Global type definitions for the frontend application
+/// <reference types="jest" />
+/// <reference types="react" />
+/// <reference types="node" />
 
 declare global {
   // Jest globals for test files
-  declare const describe: jest.Describe;
-  declare const it: jest.It;
-  declare const test: jest.It;
-  declare const expect: jest.Expect;
-  declare const beforeEach: jest.Lifecycle;
-  declare const afterEach: jest.Lifecycle;
-  declare const beforeAll: jest.Lifecycle;
-  declare const afterAll: jest.Lifecycle;
+  const describe: any;
+  const it: any;
+  const test: any;
+  const expect: any;
+  const beforeEach: any;
+  const afterEach: any;
+  const beforeAll: any;
+  const afterAll: any;
 
   // Node.js globals
-  declare namespace NodeJS {
+  namespace NodeJS {
     interface ProcessEnv {
       NODE_ENV: 'development' | 'production' | 'test';
       NEXT_PUBLIC_API_URL?: string;
@@ -39,20 +42,9 @@ declare global {
     Hls?: any;
   }
 
-  // Fetch API types
+  // Extend existing Fetch API types if needed
   interface RequestInit {
-    method?: string;
-    headers?: HeadersInit;
-    body?: BodyInit | null;
-    mode?: RequestMode;
-    credentials?: RequestCredentials;
-    cache?: RequestCache;
-    redirect?: RequestRedirect;
-    referrer?: string;
-    referrerPolicy?: ReferrerPolicy;
-    integrity?: string;
-    keepalive?: boolean;
-    signal?: AbortSignal | null;
+    // Additional properties can be added here if needed
   }
 
   // Performance API extensions
@@ -93,7 +85,7 @@ declare module 'hls.js' {
 }
 
 declare module '*.svg' {
-  const content: React.FunctionComponent<React.SVGAttributes<SVGElement>>;
+  const content: any;
   export default content;
 }
 

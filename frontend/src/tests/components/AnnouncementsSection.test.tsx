@@ -2,7 +2,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import AnnouncementsSection from '@/components/AnnouncementsSection';
+import AnnouncementsSection from '@/components/sections/AnnouncementsSection';
 
 // Mock the API service
 jest.mock('@/services/api', () => ({

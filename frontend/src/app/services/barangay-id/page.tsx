@@ -115,7 +115,12 @@ export default function BarangayIdPage() {
                   <span className="font-medium">3 years</span>
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Application Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="placeOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
                   Place of Birth *
@@ -178,68 +183,68 @@ export default function BarangayIdPage() {
               </div>
             </div>
 
-            {/* Physical Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Physical Information</h3>
+              {/* Physical Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-900">Physical Information</h3>
 
-              <div className="grid md:grid-cols-3 gap-4">
-                <div>
-                  <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1">
-                    Height (cm)
-                  </label>
-                  <Input
-                    id="height"
-                    name="height"
-                    type="number"
-                    min="100"
-                    max="250"
-                    value={formData.height}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 165"
-                  />
-                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="height" className="block text-sm font-medium text-gray-700 mb-1">
+                      Height (cm)
+                    </label>
+                    <Input
+                      id="height"
+                      name="height"
+                      type="number"
+                      min="100"
+                      max="250"
+                      value={formData.height}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 165"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
-                    Weight (kg)
-                  </label>
-                  <Input
-                    id="weight"
-                    name="weight"
-                    type="number"
-                    min="30"
-                    max="200"
-                    value={formData.weight}
-                    onChange={handleInputChange}
-                    placeholder="e.g., 65"
-                  />
-                </div>
+                  <div>
+                    <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">
+                      Weight (kg)
+                    </label>
+                    <Input
+                      id="weight"
+                      name="weight"
+                      type="number"
+                      min="30"
+                      max="200"
+                      value={formData.weight}
+                      onChange={handleInputChange}
+                      placeholder="e.g., 65"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="bloodType" className="block text-sm font-medium text-gray-700 mb-1">
-                    Blood Type
-                  </label>
-                  <select
-                    id="bloodType"
-                    name="bloodType"
-                    value={formData.bloodType}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  >
-                    <option value="">Select blood type</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="unknown">Unknown</option>
-                  </select>
+                  <div>
+                    <label htmlFor="bloodType" className="block text-sm font-medium text-gray-700 mb-1">
+                      Blood Type
+                    </label>
+                    <select
+                      id="bloodType"
+                      name="bloodType"
+                      value={formData.bloodType}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    >
+                      <option value="">Select blood type</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                      <option value="unknown">Unknown</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-            </div>
 
             {/* Emergency Contact */}
             <div className="space-y-4">
