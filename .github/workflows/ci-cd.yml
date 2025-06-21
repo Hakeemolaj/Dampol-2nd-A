@@ -56,50 +56,31 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-        cache-dependency-path: |
-          backend/package-lock.json
-          frontend/package-lock.json
+        cache-dependency-path: package-lock.json
     
-    - name: Install backend dependencies
-      run: |
-        cd backend
-        npm ci
-    
-    - name: Install frontend dependencies
-      run: |
-        cd frontend
-        npm ci
+    - name: Install dependencies
+      run: npm ci
     
     - name: Run backend linting
-      run: |
-        cd backend
-        npm run lint
-    
+      run: npm run lint:backend
+
     - name: Run frontend linting
-      run: |
-        cd frontend
-        npm run lint
+      run: npm run lint:frontend
     
     - name: Run backend tests
-      run: |
-        cd backend
-        npm run test:coverage
+      run: npm run test:backend
       env:
         DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
         REDIS_URL: redis://localhost:6379
         NODE_ENV: test
-    
+
     - name: Run frontend tests
-      run: |
-        cd frontend
-        npm run test:coverage
+      run: npm run test:frontend
       env:
         NODE_ENV: test
     
     - name: Run security audit
-      run: |
-        cd backend && npm audit --audit-level high
-        cd ../frontend && npm audit --audit-level high
+      run: npm run security:audit
     
     - name: Upload backend coverage to Codecov
       uses: codecov/codecov-action@v3
