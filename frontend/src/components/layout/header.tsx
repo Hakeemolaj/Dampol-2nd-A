@@ -4,11 +4,15 @@ import React, { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
+import NotificationBell from '@/components/notifications/NotificationBell'
 
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'Services', href: '/services' },
   { name: 'Dashboard', href: '/dashboard' },
+  { name: 'Profile', href: '/profile' },
+  { name: 'Report Incident', href: '/incidents' },
+  { name: 'Live Streams', href: '/streaming' },
   { name: 'Announcements', href: '/announcements' },
   { name: 'Feedback', href: '/feedback' },
   { name: 'Surveys', href: '/surveys' },
@@ -88,6 +92,11 @@ export function Header() {
                   </Link>
                 </Button>
               </div>
+
+              {/* Notifications */}
+              {user && (
+                <NotificationBell className="hidden sm:block" />
+              )}
 
               {/* Search Button */}
               <button
@@ -198,6 +207,13 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     📊 Dashboard
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="text-primary-100 hover:text-white hover:bg-primary-700 block px-4 py-3 rounded-lg text-base font-medium transition-all duration-200"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    👤 My Profile
                   </Link>
                   <button
                     onClick={handleSignOut}

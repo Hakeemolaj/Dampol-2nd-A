@@ -1,16 +1,42 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { Database } from './database.types'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key'
+// Environment variable validation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-// Create a mock client for development if real credentials aren't provided
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn(
+    '⚠️  Missing Supabase environment variables. Please check your .env.local file.\n' +
+    '   Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  )
+}
+
+// Create Supabase client with TypeScript support
+export const supabase: SupabaseClient<Database> = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co',
+  supabaseAnonKey || 'placeholder-key',
+  {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+    global: {
+      headers: {
+        'X-Client-Info': 'barangay-frontend',
+      },
+    },
   }
-})
+)
+
+// Configuration status
+export const supabaseConfig = {
+  isConfigured: !!(supabaseUrl && supabaseAnonKey &&
+    !supabaseUrl.includes('placeholder') &&
+    !supabaseAnonKey.includes('placeholder')),
+  url: supabaseUrl || 'https://placeholder.supabase.co',
+}
 
 // Database types (will be generated from Supabase CLI)
 export type Database = {

@@ -25,6 +25,18 @@ const adminNavigation = [
     description: 'Resident database'
   },
   {
+    name: 'Incident Management',
+    href: '/admin/incidents',
+    icon: '🚨',
+    description: 'Blotter and incident reports'
+  },
+  {
+    name: 'Live Streaming',
+    href: '/admin/streaming',
+    icon: '🎥',
+    description: 'Manage live streams & broadcasts'
+  },
+  {
     name: 'Announcements',
     href: '/admin/announcements',
     icon: '📢',

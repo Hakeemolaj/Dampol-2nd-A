@@ -1,6 +1,6 @@
 const request = require('supertest');
 const express = require('express');
-const documentRoutes = require('../src/routes/documents');
+const documentRoutes = require('../src/routes/documents').default;
 
 // Create test app
 const app = express();
@@ -194,7 +194,7 @@ describe('Document API Tests', () => {
       });
     });
 
-    describe('PUT /api/v1/documents/admin/requests/:id/status', () => {
+    describe('PATCH /api/v1/documents/admin/requests/:id/status', () => {
       let requestId;
 
       beforeEach(async () => {
@@ -217,7 +217,7 @@ describe('Document API Tests', () => {
 
       it('should update document request status', async () => {
         const response = await request(app)
-          .put(`/api/v1/documents/admin/requests/${requestId}/status`)
+          .patch(`/api/v1/documents/admin/requests/${requestId}/status`)
           .send({
             status: 'Processing',
             notes: 'Started processing the request'
@@ -231,7 +231,7 @@ describe('Document API Tests', () => {
 
       it('should reject invalid status', async () => {
         const response = await request(app)
-          .put(`/api/v1/documents/admin/requests/${requestId}/status`)
+          .patch(`/api/v1/documents/admin/requests/${requestId}/status`)
           .send({
             status: 'InvalidStatus'
           })
@@ -243,7 +243,7 @@ describe('Document API Tests', () => {
 
       it('should return 404 for non-existent request', async () => {
         const response = await request(app)
-          .put('/api/v1/documents/admin/requests/non-existent-id/status')
+          .patch('/api/v1/documents/admin/requests/non-existent-id/status')
           .send({
             status: 'Processing'
           })

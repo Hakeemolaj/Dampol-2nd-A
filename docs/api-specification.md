@@ -2,16 +2,66 @@
 
 ## Overview
 
-RESTful API specification for the Barangay Hall Web Application, designed with security, compliance, and accessibility in mind.
+RESTful API specification for the Barangay Hall Web Application, designed with security, compliance, and accessibility in mind. The API is built with Node.js/Express and uses Supabase for database and authentication.
 
-**Base URL:** `https://api.barangay-app.gov.ph/v1`
-**Authentication:** JWT Bearer Token
+**Base URL:** `http://localhost:3002/api/v1` (Development)
+**Production URL:** `https://api.barangay-app.gov.ph/v1`
+**Authentication:** JWT Bearer Token (Supabase Auth)
 **Content-Type:** `application/json`
+**Database:** Supabase (PostgreSQL with Row Level Security)
 
 ## Authentication
 
+The API uses Supabase Authentication with JWT tokens. All protected endpoints require a valid Bearer token in the Authorization header.
+
+### Authentication Flow
+
+1. **Register/Login** → Receive JWT token
+2. **Include token** in subsequent requests: `Authorization: Bearer <token>`
+3. **Token validation** happens automatically via Supabase
+4. **Row Level Security** ensures users only access authorized data
+
+### POST /auth/register
+Register new resident account with Supabase Auth
+
+**Request:**
+```json
+{
+  "email": "user@example.com",
+  "password": "securepassword",
+  "firstName": "Juan",
+  "lastName": "Dela Cruz",
+  "middleName": "Santos",
+  "phone": "+639123456789"
+}
+```
+
+**Response (201):**
+```json
+{
+  "status": "success",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "first_name": "Juan",
+      "last_name": "Dela Cruz",
+      "role": "resident"
+    },
+    "session": {
+      "access_token": "...",
+      "refresh_token": "...",
+      "expires_at": 1234567890
+    }
+  }
+}
+```
+
 ### POST /auth/login
 Login with email and password
+
+**Request:**
 ```json
 {
   "email": "user@example.com",
@@ -19,15 +69,326 @@ Login with email and password
 }
 ```
 
-### POST /auth/register
-Register new resident account
+**Response (200):**
 ```json
 {
-  "email": "user@example.com",
-  "password": "securepassword",
-  "first_name": "Juan",
-  "last_name": "Dela Cruz",
-  "phone": "+639123456789"
+  "status": "success",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "first_name": "Juan",
+      "last_name": "Dela Cruz",
+      "role": "resident"
+    },
+    "session": {
+      "access_token": "...",
+      "refresh_token": "...",
+      "expires_at": 1234567890
+    }
+  }
+}
+```
+
+### POST /auth/logout
+Logout current user
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "message": "Logged out successfully"
+}
+```
+
+### GET /auth/profile
+Get current user profile
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "first_name": "Juan",
+      "last_name": "Dela Cruz",
+      "middle_name": "Santos",
+      "phone": "+639123456789",
+      "role": "resident",
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  }
+}
+```
+
+### PUT /auth/profile
+Update user profile
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "first_name": "Juan Carlos",
+  "phone": "+639987654321",
+  "address": "123 Main St, Dampol 2nd A"
+}
+```
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "email": "user@example.com",
+      "first_name": "Juan Carlos",
+      "phone": "+639987654321",
+      "address": "123 Main St, Dampol 2nd A",
+      "updated_at": "2025-01-01T12:00:00Z"
+    }
+  }
+}
+```
+
+## Announcements
+
+Public announcements and community notices. Published announcements are visible to all users.
+
+### GET /announcements
+Get published announcements with pagination and filtering
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10, max: 50)
+- `category` (optional): Filter by category
+- `priority` (optional): Filter by priority (low, normal, high, urgent)
+- `search` (optional): Search in title and content
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "announcements": [
+      {
+        "id": "uuid",
+        "title": "Barangay Assembly - January 15, 2025",
+        "summary": "Monthly barangay assembly for residents",
+        "content": "Join us for our monthly community meeting...",
+        "category": "Meeting",
+        "priority": "normal",
+        "is_published": true,
+        "published_at": "2025-01-10T08:00:00Z",
+        "expires_at": "2025-01-15T23:59:59Z",
+        "author_id": "uuid",
+        "created_at": "2025-01-10T08:00:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 25,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 3,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}
+```
+
+### GET /announcements/urgent
+Get urgent announcements
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "announcements": [
+      {
+        "id": "uuid",
+        "title": "Road Improvement Project - Dampol Road",
+        "summary": "Road concreting project ongoing",
+        "priority": "urgent",
+        "published_at": "2025-01-08T06:00:00Z"
+      }
+    ]
+  }
+}
+```
+
+### GET /announcements/categories
+Get available announcement categories
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "categories": [
+      "Meeting",
+      "Health",
+      "Infrastructure",
+      "Environment",
+      "Event",
+      "Safety"
+    ]
+  }
+}
+```
+
+### GET /announcements/:id
+Get specific announcement by ID
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "announcement": {
+      "id": "uuid",
+      "title": "Barangay Assembly - January 15, 2025",
+      "summary": "Monthly barangay assembly for residents",
+      "content": "Join us for our monthly community meeting...",
+      "category": "Meeting",
+      "priority": "normal",
+      "is_published": true,
+      "published_at": "2025-01-10T08:00:00Z",
+      "expires_at": "2025-01-15T23:59:59Z",
+      "created_at": "2025-01-10T08:00:00Z"
+    }
+  }
+}
+```
+
+## Residents
+
+Resident management and registration. Requires authentication.
+
+### GET /residents
+Get residents list (Admin/Staff only)
+
+**Headers:** `Authorization: Bearer <token>`
+**Required Role:** admin, staff
+
+**Query Parameters:**
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Items per page (default: 10)
+- `search` (optional): Search by resident ID or name
+- `status` (optional): Filter by status (Active, Inactive, Deceased, Moved)
+- `household_id` (optional): Filter by household
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "residents": [
+      {
+        "id": "uuid",
+        "user_id": "uuid",
+        "resident_id": "RES-000001",
+        "household_id": "uuid",
+        "relationship_to_head": "Head",
+        "is_registered_voter": true,
+        "voter_id": "1234567890",
+        "is_pwd": false,
+        "is_senior_citizen": false,
+        "is_4ps_beneficiary": false,
+        "status": "Active",
+        "user_profile": {
+          "first_name": "Juan",
+          "last_name": "Dela Cruz",
+          "phone": "+639123456789"
+        }
+      }
+    ],
+    "pagination": {
+      "total": 150,
+      "page": 1,
+      "limit": 10,
+      "totalPages": 15,
+      "hasNext": true,
+      "hasPrev": false
+    }
+  }
+}
+```
+
+### POST /residents
+Register as resident
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Request:**
+```json
+{
+  "resident_id": "RES-000002",
+  "household_id": "uuid",
+  "relationship_to_head": "Spouse",
+  "is_registered_voter": true,
+  "voter_id": "0987654321",
+  "is_pwd": false,
+  "is_senior_citizen": false,
+  "is_4ps_beneficiary": true,
+  "emergency_contact_name": "Maria Dela Cruz",
+  "emergency_contact_phone": "+639987654321"
+}
+```
+
+**Response (201):**
+```json
+{
+  "status": "success",
+  "data": {
+    "resident": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "resident_id": "RES-000002",
+      "household_id": "uuid",
+      "relationship_to_head": "Spouse",
+      "status": "Active",
+      "created_at": "2025-01-01T00:00:00Z"
+    }
+  }
+}
+```
+
+### GET /residents/profile
+Get own resident profile
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response (200):**
+```json
+{
+  "status": "success",
+  "data": {
+    "resident": {
+      "id": "uuid",
+      "user_id": "uuid",
+      "resident_id": "RES-000001",
+      "household_id": "uuid",
+      "relationship_to_head": "Head",
+      "is_registered_voter": true,
+      "status": "Active",
+      "user_profile": {
+        "first_name": "Juan",
+        "last_name": "Dela Cruz",
+        "phone": "+639123456789",
+        "address": "123 Main St, Dampol 2nd A"
+      }
+    }
+  }
 }
 ```
 

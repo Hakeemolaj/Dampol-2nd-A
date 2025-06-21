@@ -49,7 +49,13 @@
     "security:audit": "npm audit --workspaces",
     "security:fix": "npm audit fix --workspaces",
     "docs:generate": "cd docs && npm run generate",
-    "docs:serve": "cd docs && npm run serve"
+    "docs:serve": "cd docs && npm run serve",
+    "generate-types": "./scripts/generate-types.sh",
+    "supabase:types": "npm run generate-types",
+    "db:migrate": "./scripts/run-migrations.sh migrate",
+    "db:seed": "./scripts/run-migrations.sh seed",
+    "db:reset": "./scripts/run-migrations.sh reset",
+    "db:rollback": "./scripts/run-migrations.sh rollback"
   },
   "keywords": [
     "barangay",

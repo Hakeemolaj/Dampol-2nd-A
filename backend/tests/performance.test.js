@@ -1,6 +1,7 @@
 const request = require('supertest');
 const express = require('express');
-const documentRoutes = require('../src/routes/documents');
+const documentRoutes = require('../src/routes/documents').default;
+const testUtils = require('./testUtils');
 
 // Create test app
 const app = express();
@@ -220,7 +221,7 @@ describe('Performance Tests', () => {
         if (response.status === 201) {
           // Update status for testing
           await request(app)
-            .put(`/api/v1/documents/admin/requests/${response.body.data.id}/status`)
+            .patch(`/api/v1/documents/admin/requests/${response.body.data.id}/status`)
             .send({ status });
         }
       }

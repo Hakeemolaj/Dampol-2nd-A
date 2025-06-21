@@ -1,7 +1,24 @@
 import express from 'express';
 import { Request, Response } from 'express';
+import { query, param, validationResult } from 'express-validator';
+import { authenticate } from '../middleware/auth';
+import { StreamAnalyticsService } from '../services/streamAnalyticsService';
 
 const router = express.Router();
+const streamAnalyticsService = new StreamAnalyticsService();
+
+// Validation middleware
+const handleValidationErrors = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({
+      status: 'error',
+      message: 'Validation failed',
+      errors: errors.array()
+    });
+  }
+  next();
+};
 
 // Mock data for analytics (in production, this would come from database queries)
 const analyticsData = {
@@ -688,4 +705,266 @@ router.get('/export', async (req: Request, res: Response) => {
   }
 });
 
-module.exports = router;
+// =============================================
+// STREAMING ANALYTICS ROUTES
+// =============================================
+
+// Get analytics for multiple streams
+router.get('/streams',
+  authenticate,
+  [
+    query('startDate').optional().isISO8601(),
+    query('endDate').optional().isISO8601(),
+    query('category').optional().isIn(['meeting', 'emergency', 'event', 'announcement', 'education']),
+    query('status').optional().isIn(['scheduled', 'live', 'ended', 'cancelled']),
+    query('limit').optional().isInt({ min: 1, max: 100 })
+  ],
+  handleValidationErrors,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const filters = {
+        startDate: req.query.startDate as string,
+        endDate: req.query.endDate as string,
+        category: req.query.category as string,
+        status: req.query.status as string,
+        limit: req.query.limit ? parseInt(req.query.limit as string) : undefined
+      };
+
+      const analytics = await streamAnalyticsService.getStreamsAnalytics(filters);
+
+      res.json({
+        status: 'success',
+        data: analytics
+      });
+    } catch (error) {
+      console.error('Error fetching streams analytics:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      });
+    }
+  }
+);
+
+// Get analytics for a specific stream
+router.get('/streams/:id',
+  authenticate,
+  [param('id').isUUID()],
+  handleValidationErrors,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const { id } = req.params;
+      const analytics = await streamAnalyticsService.getStreamAnalytics(id);
+
+      res.json({
+        status: 'success',
+        data: analytics
+      });
+    } catch (error) {
+      console.error('Error fetching stream analytics:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      });
+    }
+  }
+);
+
+// Get popular streams
+router.get('/streams/popular',
+  authenticate,
+  [
+    query('timeframe').optional().isIn(['day', 'week', 'month', 'all'])
+  ],
+  handleValidationErrors,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      const timeframe = (req.query.timeframe as 'day' | 'week' | 'month' | 'all') || 'week';
+      const popularStreams = await streamAnalyticsService.getPopularStreams(timeframe);
+
+      res.json({
+        status: 'success',
+        data: popularStreams
+      });
+    } catch (error) {
+      console.error('Error fetching popular streams:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      });
+    }
+  }
+);
+
+// Get real-time dashboard data
+router.get('/dashboard/streaming',
+  authenticate,
+  async (req: express.Request, res: express.Response) => {
+    try {
+      // Get current live streams
+      const liveStreamsAnalytics = await streamAnalyticsService.getStreamsAnalytics({
+        status: 'live'
+      });
+
+      // Get today's analytics
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const todayAnalytics = await streamAnalyticsService.getStreamsAnalytics({
+        startDate: today.toISOString()
+      });
+
+      // Get popular streams this week
+      const popularStreams = await streamAnalyticsService.getPopularStreams('week');
+
+      const dashboardData = {
+        live_streams: liveStreamsAnalytics,
+        today_summary: todayAnalytics.summary,
+        popular_streams: popularStreams.slice(0, 5),
+        real_time_metrics: {
+          active_viewers: liveStreamsAnalytics.streams.reduce((sum, stream) =>
+            sum + stream.total_viewers, 0),
+          live_stream_count: liveStreamsAnalytics.streams.length,
+          total_engagement: liveStreamsAnalytics.summary.average_engagement
+        }
+      };
+
+      res.json({
+        status: 'success',
+        data: dashboardData
+      });
+    } catch (error) {
+      console.error('Error fetching streaming dashboard data:', error);
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal server error'
+      });
+    }
+  }
+);
+
+// GET /api/v1/analytics/export
+// Export analytics data in various formats
+router.get('/export', async (req: Request, res: Response) => {
+  try {
+    const { format = 'json', category = 'all', dateRange = 'last30days' } = req.query;
+
+    let data: any = {};
+
+    // Get data based on category
+    switch (category) {
+      case 'demographics':
+        data = analyticsData.demographics;
+        break;
+      case 'services':
+        data = analyticsData.services;
+        break;
+      case 'financial':
+        data = analyticsData.financial;
+        break;
+      case 'communication':
+        data = analyticsData.communication;
+        break;
+      case 'operational':
+        data = analyticsData.operational;
+        break;
+      default:
+        data = analyticsData;
+    }
+
+    if (format === 'csv') {
+      // Convert data to CSV format
+      const csvData = convertToCSV(data, category as string);
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="barangay-analytics-${category}-${dateRange}.csv"`);
+      res.send(csvData);
+    } else if (format === 'pdf') {
+      // Generate PDF report
+      const pdfBuffer = await generatePDFReport(data, category as string, dateRange as string);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="barangay-report-${category}-${dateRange}.pdf"`);
+      res.send(pdfBuffer);
+    } else {
+      // Default JSON format
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="barangay-analytics-${category}-${dateRange}.json"`);
+      res.json({
+        success: true,
+        data,
+        metadata: {
+          category,
+          dateRange,
+          exportedAt: new Date().toISOString(),
+          format: 'json'
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Error exporting analytics data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export analytics data'
+    });
+  }
+});
+
+// Helper function to convert data to CSV
+function convertToCSV(data: any, category: string): string {
+  let csvContent = '';
+
+  switch (category) {
+    case 'demographics':
+      csvContent = 'Age Group,Count,Percentage\n';
+      data.ageGroups?.forEach((group: any) => {
+        csvContent += `${group.range},${group.count},${group.percentage}\n`;
+      });
+      csvContent += '\nGender,Count,Percentage\n';
+      data.gender?.forEach((g: any) => {
+        csvContent += `${g.type},${g.count},${g.percentage}\n`;
+      });
+      break;
+
+    case 'services':
+      csvContent = 'Document Type,Count,Percentage\n';
+      data.popularDocuments?.forEach((doc: any) => {
+        csvContent += `${doc.type},${doc.count},${doc.percentage}\n`;
+      });
+      break;
+
+    case 'financial':
+      csvContent = 'Month,Revenue,Expenses\n';
+      data.monthlyRevenue?.forEach((month: any) => {
+        csvContent += `${month.month},${month.revenue},${month.expenses}\n`;
+      });
+      break;
+
+    default:
+      csvContent = 'Category,Value\n';
+      csvContent += `Total Residents,${data.overview?.totalResidents || 0}\n`;
+      csvContent += `Total Households,${data.overview?.totalHouseholds || 0}\n`;
+      csvContent += `Active Requests,${data.overview?.activeRequests || 0}\n`;
+      csvContent += `Monthly Revenue,${data.overview?.monthlyRevenue || 0}\n`;
+  }
+
+  return csvContent;
+}
+
+// Helper function to generate PDF report (placeholder)
+async function generatePDFReport(data: any, category: string, dateRange: string): Promise<Buffer> {
+  // This would use a PDF generation library like puppeteer or jsPDF
+  // For now, return a simple text-based PDF placeholder
+  const reportContent = `
+    BARANGAY DAMPOL 2ND A
+    ${category.toUpperCase()} REPORT
+
+    Date Range: ${dateRange}
+    Generated: ${new Date().toLocaleDateString()}
+
+    ${JSON.stringify(data, null, 2)}
+  `;
+
+  // In a real implementation, you would use a proper PDF library
+  return Buffer.from(reportContent, 'utf-8');
+}
+
+export default router;

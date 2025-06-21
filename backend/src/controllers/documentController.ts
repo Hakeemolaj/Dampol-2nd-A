@@ -6,6 +6,22 @@ import { v4 as uuidv4 } from 'uuid';
 import fileStorageService from '@/services/fileStorageService';
 import workflowService from '@/services/workflowService';
 
+// Input sanitization function
+function sanitizeInput(input: string): string {
+  if (typeof input !== 'string') return input;
+
+  return input
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/javascript:/gi, '') // Remove javascript: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/['";]/g, '') // Remove quotes and semicolons that could be used for SQL injection
+    .replace(/DROP\s+TABLE/gi, '') // Remove DROP TABLE statements
+    .replace(/DELETE\s+FROM/gi, '') // Remove DELETE statements
+    .replace(/INSERT\s+INTO/gi, '') // Remove INSERT statements
+    .replace(/UPDATE\s+SET/gi, '') // Remove UPDATE statements
+    .trim();
+}
+
 // Mock data for document types
 const documentTypes = [
   {
@@ -132,18 +148,26 @@ export class DocumentController {
 
       const {
         type,
-        firstName,
-        lastName,
-        middleName,
+        firstName: rawFirstName,
+        lastName: rawLastName,
+        middleName: rawMiddleName,
         dateOfBirth,
         civilStatus,
-        address,
+        address: rawAddress,
         contactNumber,
         email,
-        purpose,
-        otherPurpose,
+        purpose: rawPurpose,
+        otherPurpose: rawOtherPurpose,
         additionalInfo
       } = validation.data;
+
+      // Sanitize input data
+      const firstName = sanitizeInput(rawFirstName);
+      const lastName = sanitizeInput(rawLastName);
+      const middleName = rawMiddleName ? sanitizeInput(rawMiddleName) : undefined;
+      const address = sanitizeInput(rawAddress);
+      const purpose = sanitizeInput(rawPurpose);
+      const otherPurpose = rawOtherPurpose ? sanitizeInput(rawOtherPurpose) : undefined;
 
       // Find document type
       const documentType = documentTypes.find(dt => dt.id === type);
@@ -419,6 +443,14 @@ export class DocumentController {
     try {
       const { id } = req.params;
 
+      if (!id) {
+        res.status(400).json({
+          success: false,
+          message: 'Document request ID is required',
+        });
+        return;
+      }
+
       const workflow = workflowService.getWorkflowByDocumentRequest(id);
       if (!workflow) {
         res.status(404).json({
@@ -452,6 +484,14 @@ export class DocumentController {
       const { id, stepId } = req.params;
       const { assignedTo } = req.body;
 
+      if (!id || !stepId) {
+        res.status(400).json({
+          success: false,
+          message: 'Document request ID and step ID are required',
+        });
+        return;
+      }
+
       const workflow = workflowService.getWorkflowByDocumentRequest(id);
       if (!workflow) {
         res.status(404).json({
@@ -461,7 +501,7 @@ export class DocumentController {
         return;
       }
 
-      const success = workflowService.startStep(workflow.id, stepId, assignedTo || req.user?.id);
+      const success = workflowService.startStep(workflow.id, stepId, assignedTo || req.user?.id || 'system');
       if (!success) {
         res.status(400).json({
           success: false,
@@ -488,6 +528,14 @@ export class DocumentController {
     try {
       const { id, stepId } = req.params;
       const { notes, attachments } = req.body;
+
+      if (!id || !stepId) {
+        res.status(400).json({
+          success: false,
+          message: 'Document request ID and step ID are required',
+        });
+        return;
+      }
 
       const workflow = workflowService.getWorkflowByDocumentRequest(id);
       if (!workflow) {

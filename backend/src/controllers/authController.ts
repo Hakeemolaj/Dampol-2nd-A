@@ -1,28 +1,29 @@
 import { Response } from 'express';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import { supabase, supabaseAdmin } from '@/config/supabase';
 import { AuthenticatedRequest } from '@/middleware/auth';
 import { CustomError, catchAsync } from '@/middleware/errorHandler';
-import { sendEmail } from '@/services/emailService';
+import { AuthService } from '@/services/authService';
+import { supabase, supabaseAdmin } from '@/config/supabase';
 
 const signToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET!, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  } as jwt.SignOptions);
 };
 
-const createSendToken = (user: any, statusCode: number, res: Response) => {
-  const token = signToken(user.id);
-  
-  // Remove password from output
-  user.password = undefined;
-  
+const createSendToken = (user: any, statusCode: number, res: Response, supabaseSession?: any) => {
+  // Use Supabase session token if available, otherwise create custom JWT
+  const token = supabaseSession?.access_token || signToken(user.id);
+
+  // Remove sensitive data from output
+  const { password, ...safeUser } = user;
+
   res.status(statusCode).json({
     status: 'success',
     token,
     data: {
-      user,
+      user: safeUser,
+      session: supabaseSession || null,
     },
   });
 };
@@ -31,57 +32,25 @@ export const register = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { email, password, firstName, lastName, phone, middleName } = req.body;
 
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    const result = await AuthService.register({
       email,
       password,
-      options: {
-        data: {
-          first_name: firstName,
-          last_name: lastName,
-          middle_name: middleName,
-          phone,
-        },
-      },
+      firstName,
+      lastName,
+      middleName,
+      phone,
     });
 
-    if (authError) {
-      throw new CustomError(authError.message, 400);
-    }
-
-    if (!authData.user) {
-      throw new CustomError('Failed to create user', 400);
-    }
-
-    // Create user profile
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('user_profiles')
-      .insert({
-        id: authData.user.id,
-        first_name: firstName,
-        last_name: lastName,
-        middle_name: middleName,
-        phone,
-      })
-      .select()
-      .single();
-
-    if (profileError) {
-      // Clean up auth user if profile creation fails
-      await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-      throw new CustomError('Failed to create user profile', 400);
-    }
-
     // Send verification email if email confirmation is enabled
-    if (!authData.session) {
+    if (!result.session) {
       return res.status(201).json({
         status: 'success',
         message: 'User registered successfully. Please check your email to verify your account.',
         data: {
           user: {
-            id: authData.user.id,
-            email: authData.user.email,
-            ...profile,
+            id: result.user.id,
+            email: result.user.email,
+            ...result.profile,
           },
         },
       });
@@ -89,12 +58,13 @@ export const register = catchAsync(
 
     createSendToken(
       {
-        id: authData.user.id,
-        email: authData.user.email,
-        ...profile,
+        id: result.user.id,
+        email: result.user.email,
+        ...result.profile,
       },
       201,
-      res
+      res,
+      result.session
     );
   }
 );
@@ -103,47 +73,25 @@ export const login = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
     const { email, password } = req.body;
 
-    // Sign in with Supabase
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      throw new CustomError('Invalid email or password', 401);
-    }
-
-    if (!authData.user) {
-      throw new CustomError('Login failed', 401);
-    }
-
-    // Get user profile
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('user_profiles')
-      .select('*')
-      .eq('id', authData.user.id)
-      .single();
-
-    if (profileError) {
-      throw new CustomError('Failed to get user profile', 500);
-    }
+    const result = await AuthService.login({ email, password });
 
     createSendToken(
       {
-        id: authData.user.id,
-        email: authData.user.email,
-        ...profile,
+        id: result.user.id,
+        email: result.user.email,
+        ...result.profile,
       },
       200,
-      res
+      res,
+      result.session
     );
   }
 );
 
 export const logout = catchAsync(
   async (req: AuthenticatedRequest, res: Response) => {
-    await supabase.auth.signOut();
-    
+    await AuthService.logout();
+
     res.status(200).json({
       status: 'success',
       message: 'Logged out successfully',

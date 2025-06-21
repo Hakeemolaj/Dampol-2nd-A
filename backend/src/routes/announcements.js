@@ -1,4 +1,7 @@
 const express = require('express');
+const { announcementsService } = require('../services/database');
+const { catchAsync } = require('../middleware/errorHandler');
+const { supabaseConfig } = require('../config/supabase');
 const router = express.Router();
 
 // Sample announcements data
@@ -71,93 +74,156 @@ const announcements = [
 ];
 
 // GET /api/v1/announcements - Get all published announcements
-router.get('/', (req, res) => {
-  const { category, priority, limit = '10', offset = '0' } = req.query;
-  
-  let filteredAnnouncements = announcements.filter(a => a.isPublished);
-  
-  // Filter by category if provided
-  if (category) {
-    filteredAnnouncements = filteredAnnouncements.filter(
-      a => a.category.toLowerCase() === category.toLowerCase()
-    );
-  }
-  
-  // Filter by priority if provided
-  if (priority) {
-    filteredAnnouncements = filteredAnnouncements.filter(
-      a => a.priority.toLowerCase() === priority.toLowerCase()
-    );
-  }
-  
-  // Sort by published date (newest first)
-  filteredAnnouncements.sort((a, b) => 
-    new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  );
-  
-  // Apply pagination
+router.get('/', catchAsync(async (req, res) => {
+  const { category, priority, limit = '10', offset = '0', page = '1' } = req.query;
+
+  // Parse pagination parameters
   const limitNum = parseInt(limit) || 10;
-  const offsetNum = parseInt(offset) || 0;
-  const paginatedAnnouncements = filteredAnnouncements.slice(offsetNum, offsetNum + limitNum);
-  
+  const pageNum = parseInt(page) || 1;
+  const offsetNum = parseInt(offset) || ((pageNum - 1) * limitNum);
+
+  // Use mock data if Supabase is not configured
+  if (!supabaseConfig.isConfigured) {
+    let filteredAnnouncements = announcements.filter(a => a.isPublished);
+
+    // Apply filters
+    if (category) {
+      filteredAnnouncements = filteredAnnouncements.filter(a =>
+        a.category.toLowerCase() === category.toLowerCase()
+      );
+    }
+    if (priority) {
+      filteredAnnouncements = filteredAnnouncements.filter(a =>
+        a.priority.toLowerCase() === priority.toLowerCase()
+      );
+    }
+
+    // Apply pagination
+    const total = filteredAnnouncements.length;
+    const paginatedAnnouncements = filteredAnnouncements.slice(offsetNum, offsetNum + limitNum);
+
+    return res.json({
+      status: 'success',
+      data: {
+        announcements: paginatedAnnouncements,
+        pagination: {
+          total,
+          limit: limitNum,
+          offset: offsetNum,
+          page: pageNum,
+          hasMore: offsetNum + limitNum < total,
+        },
+      },
+    });
+  }
+
+  // Build filters
+  const filters = {};
+  if (category) filters.category = category;
+  if (priority) filters.priority = priority;
+
+  // Get published announcements
+  const result = await announcementsService.getPublished(
+    { page: pageNum, limit: limitNum, offset: offsetNum },
+    filters,
+    { column: 'published_at', ascending: false }
+  );
+
   res.json({
     status: 'success',
     data: {
-      announcements: paginatedAnnouncements,
-      pagination: {
-        total: filteredAnnouncements.length,
-        limit: limitNum,
-        offset: offsetNum,
-        hasMore: offsetNum + limitNum < filteredAnnouncements.length,
-      },
+      announcements: result.data,
+      pagination: result.pagination,
     },
   });
-});
+}));
 
 // GET /api/v1/announcements/categories - Get available categories
-router.get('/categories', (req, res) => {
-  const categories = [...new Set(announcements.map(a => a.category))];
-  
+router.get('/categories', catchAsync(async (req, res) => {
+  // Use mock data if Supabase is not configured
+  if (!supabaseConfig.isConfigured) {
+    const categories = [...new Set(announcements.map(a => a.category))].sort();
+    return res.json({
+      status: 'success',
+      data: {
+        categories,
+      },
+    });
+  }
+
+  const categories = await announcementsService.getCategories();
+
   res.json({
     status: 'success',
     data: {
       categories,
     },
   });
-});
+}));
 
 // GET /api/v1/announcements/urgent - Get urgent announcements
-router.get('/urgent', (req, res) => {
-  const urgentAnnouncements = announcements.filter(
-    a => a.isPublished && a.priority === 'urgent'
-  );
-  
+router.get('/urgent', catchAsync(async (req, res) => {
+  // Use mock data if Supabase is not configured
+  if (!supabaseConfig.isConfigured) {
+    const urgentAnnouncements = announcements.filter(a =>
+      a.isPublished && a.priority === 'urgent'
+    );
+    return res.json({
+      status: 'success',
+      data: {
+        announcements: urgentAnnouncements,
+      },
+    });
+  }
+
+  const urgentAnnouncements = await announcementsService.getUrgent();
+
   res.json({
     status: 'success',
     data: {
       announcements: urgentAnnouncements,
     },
   });
-});
+}));
 
 // GET /api/v1/announcements/:id - Get specific announcement
-router.get('/:id', (req, res) => {
+router.get('/:id', catchAsync(async (req, res) => {
   const { id } = req.params;
-  const announcement = announcements.find(a => a.id === id && a.isPublished);
-  
-  if (!announcement) {
+
+  // Use mock data if Supabase is not configured
+  if (!supabaseConfig.isConfigured) {
+    const announcement = announcements.find(a => a.id === id);
+
+    if (!announcement) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Announcement not found',
+      });
+    }
+
+    return res.json({
+      status: 'success',
+      data: {
+        announcement,
+      },
+    });
+  }
+
+  const announcement = await announcementsService.getById(id);
+
+  if (!announcement || !announcement.is_published) {
     return res.status(404).json({
       status: 'error',
       message: 'Announcement not found',
     });
   }
-  
+
   res.json({
     status: 'success',
     data: {
       announcement,
     },
   });
-});
+}));
 
 module.exports = router;

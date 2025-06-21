@@ -47,39 +47,15 @@ export function useAnnouncements(options: UseAnnouncementsOptions = {}): UseAnno
       setLoading(true);
       setError(null);
 
-      // Temporarily use mock data to prevent infinite re-renders
-      // TODO: Replace with actual API call when backend is ready
-      const mockResponse = {
-        data: {
-          announcements: [
-            {
-              id: '1',
-              title: 'Barangay Assembly - January 15, 2025',
-              summary: 'Monthly barangay assembly for Dampol 2nd A residents to discuss community matters',
-              content: 'Join us for our monthly community meeting at the Dampol 2nd A Barangay Hall.',
-              category: 'Meeting',
-              priority: 'normal' as const,
-              isPublished: true,
-              publishedAt: '2025-01-10T08:00:00Z',
-              expiresAt: '2025-01-15T18:00:00Z',
-              createdAt: '2025-01-10T08:00:00Z',
-              author: 'Barangay Captain Dampol 2nd A',
-            }
-          ],
-          pagination: {
-            total: 1,
-            limit: memoizedOptions.limit || 10,
-            offset: memoizedOptions.offset || 0,
-            hasMore: false
-          }
-        }
-      };
+      const response = await announcementsApi.getAll({
+        category: memoizedOptions.category,
+        priority: memoizedOptions.priority,
+        limit: memoizedOptions.limit,
+        offset: memoizedOptions.offset,
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setAnnouncements(mockResponse.data.announcements);
-      setPagination(mockResponse.data.pagination);
+      setAnnouncements(response.data.announcements);
+      setPagination(response.data.pagination);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -124,23 +100,8 @@ export function useAnnouncement(id: string): UseAnnouncementReturn {
       setLoading(true);
       setError(null);
 
-      // Temporarily use mock data
-      const mockAnnouncement = {
-        id: id,
-        title: 'Sample Announcement',
-        summary: 'This is a sample announcement',
-        content: 'This is the full content of the sample announcement.',
-        category: 'General',
-        priority: 'normal' as const,
-        isPublished: true,
-        publishedAt: '2025-01-10T08:00:00Z',
-        expiresAt: '2025-01-15T18:00:00Z',
-        createdAt: '2025-01-10T08:00:00Z',
-        author: 'Barangay Staff',
-      };
-
-      await new Promise(resolve => setTimeout(resolve, 300));
-      setAnnouncement(mockAnnouncement);
+      const response = await announcementsApi.getById(id);
+      setAnnouncement(response.data.announcement);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -182,25 +143,8 @@ export function useUrgentAnnouncements(): UseUrgentAnnouncementsReturn {
       setLoading(true);
       setError(null);
 
-      // Mock urgent announcements
-      const mockUrgentAnnouncements = [
-        {
-          id: 'urgent-1',
-          title: 'Emergency Road Closure',
-          summary: 'Dampol Road temporarily closed for emergency repairs',
-          content: 'Due to emergency repairs, Dampol Road will be closed from 8 AM to 5 PM today.',
-          category: 'Emergency',
-          priority: 'urgent' as const,
-          isPublished: true,
-          publishedAt: '2025-01-19T06:00:00Z',
-          expiresAt: '2025-01-19T18:00:00Z',
-          createdAt: '2025-01-19T06:00:00Z',
-          author: 'Barangay Emergency Response',
-        }
-      ];
-
-      await new Promise(resolve => setTimeout(resolve, 200));
-      setUrgentAnnouncements(mockUrgentAnnouncements);
+      const response = await announcementsApi.getUrgent();
+      setUrgentAnnouncements(response.data.announcements);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);
@@ -242,20 +186,8 @@ export function useCategories(): UseCategoriesReturn {
       setLoading(true);
       setError(null);
 
-      // Mock categories
-      const mockCategories = [
-        'Meeting',
-        'Health',
-        'Infrastructure',
-        'Emergency',
-        'Event',
-        'Environment',
-        'Education',
-        'Safety'
-      ];
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-      setCategories(mockCategories);
+      const response = await announcementsApi.getCategories();
+      setCategories(response.data.categories);
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);

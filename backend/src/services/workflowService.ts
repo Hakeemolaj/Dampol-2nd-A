@@ -190,7 +190,7 @@ class WorkflowService {
     priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium'
   ): WorkflowInstance | null {
     const workflow = this.getWorkflowByDocumentType(documentType);
-    if (!workflow) {
+    if (!workflow || workflow.steps.length === 0) {
       return null;
     }
 
@@ -198,7 +198,7 @@ class WorkflowService {
       id: uuidv4(),
       workflowId: workflow.id,
       documentRequestId,
-      currentStepId: workflow.steps[0].id,
+      currentStepId: workflow.steps[0]!.id,
       status: 'active',
       startedAt: new Date().toISOString(),
       priority,

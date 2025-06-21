@@ -1,12 +1,39 @@
 import express from 'express';
-// import { authenticate, restrictTo, optionalAuth } from '@/middleware/auth';
+import { authenticate, restrictTo, AuthenticatedRequest } from '@/middleware/auth';
+import { catchAsync } from '@/middleware/errorHandler';
+import { DocumentsService } from '@/services/database/documents.service';
+import { fileUploadService } from '@/services/fileUploadService';
+import { realTimeNotificationService } from '@/services/realTimeNotificationService';
 import { DocumentController } from '@/controllers/documentController';
-import fileStorageService from '@/services/fileStorageService';
+import multer from 'multer';
 
 const router = express.Router();
+const documentsService = new DocumentsService();
 
 // Configure multer for file uploads
-const upload = fileStorageService.getMulterConfig();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+    files: 5, // Maximum 5 files
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type'), false);
+    }
+  },
+});
 
 // Public routes
 router.get('/types', DocumentController.getDocumentTypes);
@@ -30,16 +57,17 @@ router.patch('/admin/requests/:id/status', DocumentController.updateDocumentRequ
 router.get('/admin/stats', DocumentController.getStorageStats);
 
 // File serving route
-router.get('/files/:filename', async (req, res) => {
+router.get('/files/:filename', async (req, res): Promise<void> => {
   try {
     const { filename } = req.params;
-    const fileInfo = await fileStorageService.serveFile(filename);
+    const fileInfo = await fileUploadService.serveFile(filename);
 
     if (!fileInfo) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'File not found'
       });
+      return;
     }
 
     res.setHeader('Content-Type', fileInfo.mimeType);

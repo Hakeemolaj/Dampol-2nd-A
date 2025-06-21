@@ -44,6 +44,9 @@ const handleJWTError = (): CustomError =>
 const handleJWTExpiredError = (): CustomError =>
   new CustomError('Your token has expired! Please log in again.', 401);
 
+const handleJSONParseError = (): CustomError =>
+  new CustomError('Invalid JSON format in request body', 400);
+
 const sendErrorDev = (err: AppError, res: Response) => {
   res.status(err.statusCode || 500).json({
     status: err.status,
@@ -57,6 +60,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
   // Operational, trusted error: send message to client
   if (err.isOperational) {
     res.status(err.statusCode || 500).json({
+      success: false,
       status: err.status,
       message: err.message,
     });
@@ -64,6 +68,7 @@ const sendErrorProd = (err: AppError, res: Response) => {
     // Programming or other unknown error: don't leak error details
     console.error('ERROR 💥', err);
     res.status(500).json({
+      success: false,
       status: 'error',
       message: 'Something went wrong!',
     });
@@ -90,6 +95,7 @@ export const errorHandler = (
     if (error.name === 'ValidationError') error = handleValidationErrorDB(error);
     if (error.name === 'JsonWebTokenError') error = handleJWTError();
     if (error.name === 'TokenExpiredError') error = handleJWTExpiredError();
+    if (error.type === 'entity.parse.failed' || error.name === 'SyntaxError') error = handleJSONParseError();
 
     sendErrorProd(error, res);
   }
