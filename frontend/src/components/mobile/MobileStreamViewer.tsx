@@ -4,15 +4,16 @@ import React, { useState, useEffect } from 'react';
 import MobileStreamPlayer from './MobileStreamPlayer';
 import MobileStreamChat from './MobileStreamChat';
 import StreamReactions from '../streaming/StreamReactions';
-import { 
-  EyeIcon, 
-  CalendarIcon, 
-  ClockIcon, 
+import {
+  EyeIcon,
+  CalendarIcon,
+  ClockIcon,
   ShareIcon,
   BookmarkIcon,
   ChatBubbleLeftIcon,
   HeartIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 interface Stream {

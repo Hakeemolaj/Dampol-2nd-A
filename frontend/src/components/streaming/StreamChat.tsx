@@ -3,12 +3,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/useSupabase';
-import { 
-  PaperAirplaneIcon, 
-  FaceSmileIcon, 
+import {
+  PaperAirplaneIcon,
+  FaceSmileIcon,
   ExclamationTriangleIcon,
   UserIcon,
-  ClockIcon
+  ClockIcon,
+  ChatBubbleLeftIcon
 } from '@heroicons/react/24/outline';
 
 interface ChatMessage {
