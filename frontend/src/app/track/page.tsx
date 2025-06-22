@@ -65,8 +65,18 @@ export default function TrackDocumentPage() {
     return icons[status as keyof typeof icons] || '📄'
   }
 
-  const getProgressSteps = (status: string) => {
-    const steps = [
+  const getProgressSteps = (status: string): Array<{
+    id: string;
+    title: string;
+    description: string;
+    status: 'completed' | 'current' | 'pending' | 'skipped';
+  }> => {
+    const steps: Array<{
+      id: string;
+      title: string;
+      description: string;
+      status: 'completed' | 'current' | 'pending' | 'skipped';
+    }> = [
       { id: '1', title: 'Submitted', description: 'Application received', status: 'completed' },
       { id: '2', title: 'Under Review', description: 'Documents being verified', status: 'pending' },
       { id: '3', title: 'Processing', description: 'Document being prepared', status: 'pending' },
@@ -93,7 +103,7 @@ export default function TrackDocumentPage() {
         steps.forEach(step => step.status = 'completed')
         break
       case 'rejected':
-        steps[1].status = 'error'
+        steps[1].status = 'skipped' // Use 'skipped' instead of 'error'
         break
     }
 

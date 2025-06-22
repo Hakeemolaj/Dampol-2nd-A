@@ -121,29 +121,29 @@ export function useSupabaseQuery<T>(
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<any>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const { data, error } = await queryFn()
-        
-        if (error) {
-          setError(error)
-        } else {
-          setData(data)
-        }
-      } catch (err) {
-        setError(err)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const { data, error } = await queryFn()
 
+      if (error) {
+        setError(error)
+      } else {
+        setData(data)
+      }
+    } catch (err) {
+      setError(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
   }, dependencies)
 
-  return { data, loading, error, refetch: () => fetchData() }
+  return { data, loading, error, refetch: fetchData }
 }
 
 // Hook for real-time subscriptions

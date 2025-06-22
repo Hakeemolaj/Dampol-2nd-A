@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-  EyeIcon, 
-  ChatBubbleLeftIcon, 
-  HeartIcon, 
+import {
+  EyeIcon,
+  ChatBubbleLeftIcon,
+  HeartIcon,
   ClockIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   DevicePhoneMobileIcon,
   ComputerDesktopIcon,
   GlobeAltIcon,
@@ -280,7 +280,7 @@ export default function StreamAnalyticsDashboard() {
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <TrendingUpIcon className="h-6 w-6 text-purple-600" />
+                <ArrowTrendingUpIcon className="h-6 w-6 text-purple-600" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Avg Engagement</p>

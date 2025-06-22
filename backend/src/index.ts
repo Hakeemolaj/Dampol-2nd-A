@@ -175,7 +175,7 @@ app.listen(PORT, () => {
 
   // Start streaming server
   streamingService.start();
-  console.log(`📺 Streaming Server started on RTMP port 1935 and HTTP port 8000`);
+  console.log(`📺 Streaming Server started on RTMP port 1935 and HTTP port 8002`);
 });
 
 export default app;

@@ -31,9 +31,7 @@
     "type-check": "npm run type-check:frontend && npm run type-check:backend",
     "type-check:frontend": "cd frontend && npm run type-check",
     "type-check:backend": "cd backend && npm run type-check",
-    "db:migrate": "cd database && npm run migrate",
-    "db:seed": "cd database && npm run seed",
-    "db:reset": "cd database && npm run reset",
+
     "db:backup": "cd scripts && node backup-database.js",
     "deploy:staging": "cd deployment && ./deploy-staging.sh",
     "deploy:production": "cd deployment && ./deploy-production.sh",

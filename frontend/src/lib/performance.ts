@@ -1,4 +1,5 @@
 // Performance monitoring and optimization utilities
+import React from 'react'
 
 // Cache implementation for API responses
 class CacheManager {
@@ -9,7 +10,9 @@ class CacheManager {
     // Remove oldest items if cache is full
     if (this.cache.size >= this.maxSize) {
       const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
     }
 
     this.cache.set(key, {
@@ -240,7 +243,7 @@ export function throttle<T extends (...args: any[]) => any>(
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
   
-  return function executedFunction(...args: Parameters<T>) {
+  return function executedFunction(this: any, ...args: Parameters<T>) {
     if (!inThrottle) {
       func.apply(this, args);
       inThrottle = true;
@@ -255,13 +258,13 @@ export function createLazyComponent<T extends React.ComponentType<any>>(
   fallback?: React.ComponentType
 ): React.LazyExoticComponent<T> {
   const LazyComponent = React.lazy(importFunc);
-  
+
   if (fallback) {
-    return React.lazy(() => 
-      importFunc().catch(() => ({ default: fallback }))
+    return React.lazy(() =>
+      importFunc().catch(() => ({ default: fallback as T }))
     );
   }
-  
+
   return LazyComponent;
 }
 
@@ -361,7 +364,7 @@ export function initializePerformanceMonitoring(): void {
 
 // Bundle size analyzer (development only)
 export function analyzeBundleSize(): void {
-  if (process.env.NODE_ENV !== 'development') return;
+  if (typeof process !== 'undefined' && process.env.NODE_ENV !== 'development') return;
 
   const scripts = Array.from(document.querySelectorAll('script[src]'));
   const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));

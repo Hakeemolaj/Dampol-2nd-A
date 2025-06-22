@@ -2,7 +2,31 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import AnnouncementsSection from '@/components/sections/AnnouncementsSection';
+import AnnouncementsSection from '@/components/sections/announcements-section';
+
+// Mock global fetch and test utilities
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
+
+// Create test utilities
+const testUtils = {
+  resetAllMocks: () => {
+    jest.clearAllMocks();
+    mockFetch.mockClear();
+  },
+  mockFetchResponse: (data: any) => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => data,
+    });
+  },
+  mockFetchError: (error: Error) => {
+    mockFetch.mockRejectedValueOnce(error);
+  },
+};
+
+// Add to global for test access
+(global as any).testUtils = testUtils;
 
 // Mock the API service
 jest.mock('@/services/api', () => ({
@@ -53,11 +77,11 @@ const mockAnnouncements = [
 
 describe('AnnouncementsSection', () => {
   beforeEach(() => {
-    global.testUtils.resetAllMocks();
+    testUtils.resetAllMocks();
   });
 
   it('renders announcements section with title', () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -68,7 +92,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('displays loading state initially', () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -79,7 +103,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('displays announcements after loading', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -94,7 +118,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('displays announcement categories', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -109,7 +133,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('highlights urgent announcements', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -123,7 +147,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('displays announcement summaries', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -138,7 +162,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('displays publication dates', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -153,7 +177,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('handles empty announcements list', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: [],
     });
@@ -166,7 +190,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    global.testUtils.mockFetchError(new Error('Network error'));
+    testUtils.mockFetchError(new Error('Network error'));
 
     render(<AnnouncementsSection />);
 
@@ -176,7 +200,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('allows filtering by category', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -195,7 +219,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('allows filtering by priority', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -220,7 +244,7 @@ describe('AnnouncementsSection', () => {
       title: `Announcement ${index + 1}`,
     }));
 
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: manyAnnouncements,
     });
@@ -233,7 +257,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('handles click on announcement card', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -242,7 +266,9 @@ describe('AnnouncementsSection', () => {
 
     await waitFor(() => {
       const announcementCard = screen.getByText('Community Meeting - December 20, 2024').closest('.announcement-card');
-      fireEvent.click(announcementCard);
+      if (announcementCard) {
+        fireEvent.click(announcementCard);
+      }
     });
 
     // Should navigate to announcement detail page
@@ -250,7 +276,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('displays author information', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -265,7 +291,7 @@ describe('AnnouncementsSection', () => {
   });
 
   it('refreshes announcements when refresh button is clicked', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });
@@ -278,11 +304,11 @@ describe('AnnouncementsSection', () => {
     });
 
     // Should make another API call
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
   it('is accessible with proper ARIA labels', async () => {
-    global.testUtils.mockFetchResponse({
+    testUtils.mockFetchResponse({
       status: 'success',
       data: mockAnnouncements,
     });

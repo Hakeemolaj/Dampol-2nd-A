@@ -164,3 +164,5 @@ export function AnnouncementsSection() {
     </section>
   );
 }
+
+export default AnnouncementsSection;

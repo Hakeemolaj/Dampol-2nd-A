@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
 
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Temporarily disabled due to critters module issue
     optimizePackageImports: ['@heroicons/react', 'lucide-react'],
   },
 

@@ -55,7 +55,13 @@ export function useNotifications(): UseNotificationsReturn {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api/v1';
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api/v1';
+
+  // Helper function to get access token
+  const getAccessToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
+  };
 
   // Fetch notifications
   const fetchNotifications = useCallback(async (pageNum: number = 1, append: boolean = false) => {
@@ -69,7 +75,7 @@ export function useNotifications(): UseNotificationsReturn {
         `${API_BASE}/notifications?page=${pageNum}&limit=20`,
         {
           headers: {
-            'Authorization': `Bearer ${user.access_token}`,
+            'Authorization': `Bearer ${await getAccessToken()}`,
             'Content-Type': 'application/json',
           },
         }
@@ -102,7 +108,7 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       const response = await fetch(`${API_BASE}/notifications/unread-count`, {
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -123,7 +129,7 @@ export function useNotifications(): UseNotificationsReturn {
     try {
       const response = await fetch(`${API_BASE}/notifications/preferences`, {
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -145,7 +151,7 @@ export function useNotifications(): UseNotificationsReturn {
       const response = await fetch(`${API_BASE}/notifications/${id}/read`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -173,7 +179,7 @@ export function useNotifications(): UseNotificationsReturn {
       const response = await fetch(`${API_BASE}/notifications/mark-all-read`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -197,7 +203,7 @@ export function useNotifications(): UseNotificationsReturn {
       const response = await fetch(`${API_BASE}/notifications/${id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
       });
@@ -223,7 +229,7 @@ export function useNotifications(): UseNotificationsReturn {
       const response = await fetch(`${API_BASE}/notifications/preferences`, {
         method: 'PUT',
         headers: {
-          'Authorization': `Bearer ${user.access_token}`,
+          'Authorization': `Bearer ${await getAccessToken()}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(prefs),
