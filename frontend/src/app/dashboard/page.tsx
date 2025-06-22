@@ -484,11 +484,11 @@ export default function DashboardPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-gray-600">Submitted:</span>
-                      <p className="font-medium">{new Date(request.submittedDate).toLocaleDateString()}</p>
+                      <p className="font-medium">{request.submittedDate ? new Date(request.submittedDate).toLocaleDateString() : 'N/A'}</p>
                     </div>
                     <div>
                       <span className="text-gray-600">Expected:</span>
-                      <p className="font-medium">{new Date(request.expectedDate).toLocaleDateString()}</p>
+                      <p className="font-medium">{request.expectedDate ? new Date(request.expectedDate).toLocaleDateString() : 'N/A'}</p>
                     </div>
                     <div>
                       <span className="text-gray-600">Fee:</span>
@@ -509,8 +509,8 @@ export default function DashboardPage() {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(request.progress)}`}
-                        style={{ width: `${request.progress}%` }}
+                        className={`h-2 rounded-full transition-all duration-300 ${getProgressColor(request.progress || 0)}`}
+                        style={{ width: `${request.progress || 0}%` }}
                       ></div>
                     </div>
                   </div>

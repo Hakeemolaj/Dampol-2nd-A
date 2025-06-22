@@ -1001,7 +1001,7 @@ export default function ReportsPage() {
             <Card className="government-card">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl mb-2">💵</div>
-                <div className="text-xl font-bold text-gray-900">₱{analyticsData.overview.monthlyRevenue.toLocaleString()}</div>
+                <div className="text-xl font-bold text-gray-900">₱{analyticsData.overview?.monthlyRevenue?.toLocaleString() || '0'}</div>
                 <div className="text-sm text-gray-600">Current Month</div>
               </CardContent>
             </Card>
@@ -1009,7 +1009,7 @@ export default function ReportsPage() {
             <Card className="government-card">
               <CardContent className="p-4 text-center">
                 <div className="text-2xl mb-2">📊</div>
-                <div className="text-xl font-bold text-gray-900">₱{(analyticsData.overview.monthlyRevenue * 12).toLocaleString()}</div>
+                <div className="text-xl font-bold text-gray-900">₱{((analyticsData.overview?.monthlyRevenue || 0) * 12).toLocaleString()}</div>
                 <div className="text-sm text-gray-600">Projected Annual</div>
               </CardContent>
             </Card>

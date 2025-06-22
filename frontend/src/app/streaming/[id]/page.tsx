@@ -217,7 +217,7 @@ export default function StreamPage() {
           <div className="lg:col-span-3">
             {/* Stream Player */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
-              <StreamViewer stream={currentStream} />
+              <StreamViewer streamId={currentStream.id} />
             </div>
 
             {/* Stream Info */}

@@ -10,14 +10,20 @@ const mockHls = {
   isSupported: jest.fn(() => true),
   loadSource: jest.fn(),
   attachMedia: jest.fn(),
-  on: jest.fn(),
+  on: jest.fn((event: string, callback: Function) => {
+    // Store callbacks for later triggering
+    if (!mockHls._callbacks) mockHls._callbacks = {};
+    if (!mockHls._callbacks[event]) mockHls._callbacks[event] = [];
+    mockHls._callbacks[event].push(callback);
+  }),
   destroy: jest.fn(),
   levels: [
     { height: 720, bitrate: 2500000 },
     { height: 480, bitrate: 1500000 },
     { height: 360, bitrate: 800000 }
   ],
-  currentLevel: -1
+  currentLevel: -1,
+  _callbacks: {} as any
 };
 
 jest.mock('hls.js', () => ({
@@ -112,7 +118,7 @@ describe('Streaming Quality Tests', () => {
     });
 
     test('should handle network errors gracefully', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       render(
         <StreamPlayer
@@ -125,9 +131,9 @@ describe('Streaming Quality Tests', () => {
       );
 
       // Simulate HLS error
-      const errorCallback = mockHls.on.mock.calls.find(call => call[0] === 'hlsError')?.[1];
-      if (errorCallback) {
-        errorCallback('hlsError', {
+      const errorCallbacks = mockHls._callbacks['hlsError'];
+      if (errorCallbacks && errorCallbacks.length > 0) {
+        errorCallbacks[0]('hlsError', {
           type: 'networkError',
           details: 'manifestLoadError',
           fatal: true
@@ -273,9 +279,9 @@ describe('Streaming Quality Tests', () => {
       );
 
       // Simulate video loaded event
-      const loadedCallback = mockHls.on.mock.calls.find(call => call[0] === 'manifestParsed')?.[1];
-      if (loadedCallback) {
-        loadedCallback();
+      const loadedCallbacks = mockHls._callbacks['manifestParsed'];
+      if (loadedCallbacks && loadedCallbacks.length > 0) {
+        loadedCallbacks[0]();
       }
 
       const loadTime = performance.now() - startTime;

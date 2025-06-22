@@ -300,6 +300,22 @@ export default function EmergencyPage() {
                 />
               </div>
 
+              <div>
+                <label htmlFor="emergencyDescription" className="block text-sm font-medium text-gray-700 mb-1">
+                  Emergency Description *
+                </label>
+                <textarea
+                  id="emergencyDescription"
+                  name="emergencyDescription"
+                  required
+                  rows={5}
+                  value={formData.emergencyDescription}
+                  onChange={handleInputChange}
+                  placeholder="Provide a detailed description of the emergency situation..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label htmlFor="peopleInvolved" className="block text-sm font-medium text-gray-700 mb-1">
@@ -426,19 +442,3 @@ export default function EmergencyPage() {
     </div>
   )
 }
-
-              <div>
-                <label htmlFor="emergencyDescription" className="block text-sm font-medium text-gray-700 mb-1">
-                  Emergency Description *
-                </label>
-                <textarea
-                  id="emergencyDescription"
-                  name="emergencyDescription"
-                  required
-                  rows={5}
-                  value={formData.emergencyDescription}
-                  onChange={handleInputChange}
-                  placeholder="Provide a detailed description of the emergency situation..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                />
-              </div>

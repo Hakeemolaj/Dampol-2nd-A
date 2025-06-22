@@ -9,11 +9,18 @@ interface DocumentRequest {
   id: string
   type: string
   status: string
-  submittedDate: string
-  expectedDate: string
-  fee: string
+  submittedAt?: string // Support both formats
+  submittedDate?: string
+  updatedAt?: string
+  estimatedCompletion?: string
+  expectedDate?: string
+  fee: string | number // Support both formats
   purpose: string
-  progress: number
+  progress?: number
+  applicantName?: string
+  contactNumber?: string
+  email?: string
+  trackingNumber?: string
   applicant?: {
     name: string
     address: string
@@ -21,12 +28,14 @@ interface DocumentRequest {
   }
   documents?: {
     name: string
-    status: 'verified' | 'pending' | 'missing'
+    status?: 'verified' | 'pending' | 'missing'
+    url?: string
+    uploadedAt?: string
     uploadedDate?: string
   }[]
   timeline?: TimelineStep[]
-  notes?: string[]
-  paymentStatus?: 'paid' | 'pending' | 'overdue'
+  notes?: string | string[]
+  paymentStatus?: 'paid' | 'pending' | 'overdue' | 'unpaid' | 'refunded'
   pickupLocation?: string
   contactPerson?: string
 }
@@ -61,6 +70,8 @@ export function DocumentDetailModal({
     'paid': 'bg-green-100 text-green-800',
     'pending': 'bg-yellow-100 text-yellow-800',
     'overdue': 'bg-red-100 text-red-800',
+    'unpaid': 'bg-red-100 text-red-800',
+    'refunded': 'bg-gray-100 text-gray-800',
   }
 
   const documentStatusColors = {
@@ -181,18 +192,24 @@ export function DocumentDetailModal({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700">Submitted</h4>
-                  <p className="text-lg font-semibold">{new Date(request.submittedDate).toLocaleDateString()}</p>
+                  <p className="text-lg font-semibold">
+                    {new Date(request.submittedAt || request.submittedDate || '').toLocaleDateString()}
+                  </p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700">Expected</h4>
-                  <p className="text-lg font-semibold">{new Date(request.expectedDate).toLocaleDateString()}</p>
+                  <p className="text-lg font-semibold">
+                    {new Date(request.estimatedCompletion || request.expectedDate || '').toLocaleDateString()}
+                  </p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700">Fee</h4>
                   <div className="flex items-center gap-2">
-                    <p className="text-lg font-semibold text-primary-600">{request.fee}</p>
+                    <p className="text-lg font-semibold text-primary-600">
+                    {typeof request.fee === 'number' ? `₱${request.fee}` : request.fee}
+                  </p>
                     {request.paymentStatus && (
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[request.paymentStatus]}`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${paymentStatusColors[request.paymentStatus as keyof typeof paymentStatusColors] || 'bg-gray-100 text-gray-800'}`}>
                         {request.paymentStatus}
                       </span>
                     )}
@@ -261,8 +278,8 @@ export function DocumentDetailModal({
                           <p className="text-sm text-gray-600">Uploaded: {new Date(doc.uploadedDate).toLocaleDateString()}</p>
                         )}
                       </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${documentStatusColors[doc.status]}`}>
-                        {doc.status}
+                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${doc.status ? documentStatusColors[doc.status as keyof typeof documentStatusColors] || 'bg-gray-100 text-gray-800' : 'bg-gray-100 text-gray-800'}`}>
+                        {doc.status || 'pending'}
                       </span>
                     </div>
                   ))}
@@ -277,9 +294,9 @@ export function DocumentDetailModal({
           {activeTab === 'history' && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-900">Request History</h4>
-              {request.notes && request.notes.length > 0 ? (
+              {request.notes ? (
                 <div className="space-y-3">
-                  {request.notes.map((note, index) => (
+                  {(Array.isArray(request.notes) ? request.notes : [request.notes]).map((note: string, index: number) => (
                     <div key={index} className="p-4 bg-gray-50 rounded-lg">
                       <p className="text-gray-900">{note}</p>
                       <p className="text-sm text-gray-600 mt-2">

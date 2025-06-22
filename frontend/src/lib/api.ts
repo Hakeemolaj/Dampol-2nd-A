@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004';
 const API_VERSION = 'v1';
 
 class ApiError extends Error {
@@ -19,6 +19,7 @@ async function apiRequest<T>(
       'Content-Type': 'application/json',
       ...options.headers,
     },
+    credentials: 'include',
     ...options,
   };
 
@@ -135,12 +136,14 @@ export interface HealthResponse {
 export const healthApi = {
   check: async (): Promise<HealthResponse> => {
     const url = `${API_BASE_URL}/health`;
-    const response = await fetch(url);
-    
+    const response = await fetch(url, {
+      credentials: 'include',
+    });
+
     if (!response.ok) {
       throw new ApiError(response.status, 'Health check failed');
     }
-    
+
     return await response.json();
   },
 };

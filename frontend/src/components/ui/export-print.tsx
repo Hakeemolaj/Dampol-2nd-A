@@ -87,11 +87,11 @@ export function ExportPrintActions({ requests, selectedRequest }: ExportPrintPro
               </div>
               <div class="info-item">
                 <div class="info-label">Submitted:</div>
-                <div class="info-value">${new Date(request.submittedDate).toLocaleDateString()}</div>
+                <div class="info-value">${request.submittedDate ? new Date(request.submittedDate).toLocaleDateString() : 'N/A'}</div>
               </div>
               <div class="info-item">
                 <div class="info-label">Expected:</div>
-                <div class="info-value">${new Date(request.expectedDate).toLocaleDateString()}</div>
+                <div class="info-value">${request.expectedDate ? new Date(request.expectedDate).toLocaleDateString() : 'N/A'}</div>
               </div>
             </div>
           </div>
@@ -223,8 +223,8 @@ export function ExportPrintActions({ requests, selectedRequest }: ExportPrintPro
                   <td>${request.id}</td>
                   <td>${request.type}</td>
                   <td><span class="status">${request.status}</span></td>
-                  <td>${new Date(request.submittedDate).toLocaleDateString()}</td>
-                  <td>${new Date(request.expectedDate).toLocaleDateString()}</td>
+                  <td>${request.submittedDate ? new Date(request.submittedDate).toLocaleDateString() : 'N/A'}</td>
+                  <td>${request.expectedDate ? new Date(request.expectedDate).toLocaleDateString() : 'N/A'}</td>
                   <td>${request.fee}</td>
                 </tr>
               `).join('')}

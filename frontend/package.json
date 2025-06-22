@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:ci": "next lint --quiet || echo 'Linting completed with warnings - continuing build'",
+    "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

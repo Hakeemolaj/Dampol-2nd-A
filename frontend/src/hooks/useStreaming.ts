@@ -79,7 +79,7 @@ export function useStreaming(): UseStreamingReturn {
   const [error, setError] = useState<string | null>(null);
   
   const subscriptionsRef = useRef<{ [key: string]: any }>({});
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002/api/v1';
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3004/api/v1';
 
   // Get auth token
   const getAuthToken = () => localStorage.getItem('token');

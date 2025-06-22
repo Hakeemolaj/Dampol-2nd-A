@@ -29,7 +29,16 @@ const mockXHR = {
   })
 };
 
-global.XMLHttpRequest = jest.fn(() => mockXHR);
+// Create a proper XMLHttpRequest constructor mock
+const XMLHttpRequestMock = jest.fn(() => mockXHR) as any;
+XMLHttpRequestMock.UNSENT = 0;
+XMLHttpRequestMock.OPENED = 1;
+XMLHttpRequestMock.HEADERS_RECEIVED = 2;
+XMLHttpRequestMock.LOADING = 3;
+XMLHttpRequestMock.DONE = 4;
+XMLHttpRequestMock.prototype = XMLHttpRequest.prototype;
+
+global.XMLHttpRequest = XMLHttpRequestMock;
 
 describe('FileUpload Component', () => {
   const defaultProps = {
@@ -254,7 +263,15 @@ describe('FileUpload Component', () => {
       ...mockXHR,
       status: 500
     };
-    global.XMLHttpRequest = jest.fn(() => errorXHR);
+    const ErrorXMLHttpRequestMock = jest.fn(() => errorXHR) as any;
+    ErrorXMLHttpRequestMock.UNSENT = 0;
+    ErrorXMLHttpRequestMock.OPENED = 1;
+    ErrorXMLHttpRequestMock.HEADERS_RECEIVED = 2;
+    ErrorXMLHttpRequestMock.LOADING = 3;
+    ErrorXMLHttpRequestMock.DONE = 4;
+    ErrorXMLHttpRequestMock.prototype = XMLHttpRequest.prototype;
+
+    global.XMLHttpRequest = ErrorXMLHttpRequestMock;
 
     render(<FileUpload {...defaultProps} />);
     

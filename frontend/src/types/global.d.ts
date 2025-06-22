@@ -67,18 +67,47 @@ declare global {
     text?: string;
     url?: string;
   }
+
+  // Screen Orientation API
+  interface Screen {
+    orientation?: ScreenOrientation;
+  }
+
+  interface ScreenOrientation {
+    lock?: (orientation: string) => Promise<void>;
+    unlock?: () => void;
+    angle?: number;
+    type?: string;
+  }
 }
 
 // Module declarations for libraries without types
 declare module 'hls.js' {
   export default class Hls {
     static isSupported(): boolean;
+    static Events: {
+      MANIFEST_PARSED: string;
+      ERROR: string;
+      LEVEL_SWITCHED: string;
+      FRAG_LOADED: string;
+      MEDIA_ATTACHED: string;
+      MEDIA_DETACHED: string;
+    };
+    static ErrorTypes: {
+      NETWORK_ERROR: string;
+      MEDIA_ERROR: string;
+      KEY_SYSTEM_ERROR: string;
+      MUX_ERROR: string;
+      OTHER_ERROR: string;
+    };
     constructor(config?: any);
     loadSource(src: string): void;
     attachMedia(media: HTMLMediaElement): void;
     on(event: string, callback: (...args: any[]) => void): void;
     off(event: string, callback: (...args: any[]) => void): void;
     destroy(): void;
+    startLoad(): void;
+    recoverMediaError(): void;
     levels: any[];
     currentLevel: number;
   }

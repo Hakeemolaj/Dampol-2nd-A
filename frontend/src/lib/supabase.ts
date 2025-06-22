@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
-import { Database } from './database.types'
+// import { Database } from './database.types' // Commented out to avoid conflict
 
 // Environment variable validation
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -13,7 +13,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // Create Supabase client with TypeScript support
-export const supabase: SupabaseClient<Database> = createClient(
+export const supabase: SupabaseClient<any> = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseAnonKey || 'placeholder-key',
   {

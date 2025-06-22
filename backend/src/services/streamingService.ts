@@ -60,7 +60,7 @@ export class StreamingService {
         ping_timeout: 60
       },
       http: {
-        port: 8000,
+        port: 8002,
         mediaroot: './storage',
         allow_origin: '*'
       },
@@ -410,7 +410,7 @@ export class StreamingService {
 
   public start(): void {
     this.mediaServer.run();
-    console.log('Streaming server started on RTMP port 1935 and HTTP port 8000');
+    console.log('Streaming server started on RTMP port 1935 and HTTP port 8002');
   }
 
   public stop(): void {

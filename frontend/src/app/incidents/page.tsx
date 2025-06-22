@@ -221,10 +221,9 @@ export default function IncidentsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="incident_type">Type of Incident *</Label>
-                  <Select 
-                    value={formData.incident_type} 
+                  <Select
+                    value={formData.incident_type}
                     onValueChange={(value) => handleInputChange('incident_type', value)}
-                    required
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select incident type" />
